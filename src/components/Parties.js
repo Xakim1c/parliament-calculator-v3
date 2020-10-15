@@ -16,6 +16,19 @@ import electionsConfig from '../electionsConfig'
 import ParlamentChart from '../components/ParlamentChart'
 import { Typography } from '@material-ui/core';
 
+import matchParty, {matchPartyForMap} from '../util/partyMathching'
+
+import * as d3 from 'd3'
+
+import CutoffSlider from './CutoffSlider'
+
+import FormLabel from '@material-ui/core/FormLabel';
+import FormControl from '@material-ui/core/FormControl';
+import FormGroup from '@material-ui/core/FormGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import Switch from '@material-ui/core/Switch';
+
 //import { d3 } from "d3-scale-chromatic";
 
 const styles = theme => ({
@@ -58,7 +71,7 @@ class Parties extends React.Component {
 
         defaultState.percentsLeft=100
         defaultState.againstAllReached = false
-        defaultState.onlyOnePartyPassed = false
+        defaultState.onlyOnePartyPassed = false     
 
         let parties = {}
         electionsConfig.parties.map((value) => {
@@ -77,8 +90,88 @@ class Parties extends React.Component {
         defaultState.parties = parties
 
         this.state = defaultState;
+
+        this.cutoff = electionsConfig.cutoff
+        this.switchBirimdik = true
+        this.switchMekenim = true
+        this.switchKyrgyzstan = true
       }    
 
+
+    componentDidMount() {         
+        //Костыль
+        if(this.state.parties['Биримдик'].voteResult == 0){
+            this.loadElectionsResultsData() 
+        }                       
+    }
+
+    loadElectionsResultsData = () => {
+        d3.csv(require('../data/PARTIES_RESULTS_REACT.csv')).then(data => {
+            data.forEach(function(d) {
+                d.form2_percent = parseFloat(d.form2_percent)
+                d.total = parseFloat(d.total)
+                //d.uic_number= parseFloat(d.uic_number)
+                d['«АТА МЕКЕН» саясий социалисттик партиясы'] = parseFloat(d['«АТА МЕКЕН» саясий социалисттик партиясы'])
+                d['«АФГАНИСТАН СОГУШУНУН АРДАГЕРЛЕРИ ЖАНА УШУЛ СЫЯКТУУ КАГЫШУУЛАРГА КАТЫШКАНДАРДЫН САЯСИЙ ПАРТИЯСЫ»'] = parseFloat(d['«АФГАНИСТАН СОГУШУНУН АРДАГЕРЛЕРИ ЖАНА УШУЛ СЫЯКТУУ КАГЫШУУЛАРГА КАТЫШКАНДАРДЫН САЯСИЙ ПАРТИЯСЫ»'])
+                d['«БИР БОЛ»'] = parseFloat(d['«БИР БОЛ»']) 
+                d['«БИРИМДИК»'] = parseFloat(d['«БИРИМДИК»'])
+                d['«БҮТҮН КЫРГЫЗСТАН» саясий партиясы'] = parseFloat(d['«БҮТҮН КЫРГЫЗСТАН» саясий партиясы'])
+                d['«ЗАМАНДАШ»'] = parseFloat(d['«ЗАМАНДАШ»'])
+                d['«КЫРГЫЗСТАН»'] = parseFloat(d['«КЫРГЫЗСТАН»'])
+                d['«МЕКЕН ЫНТЫМАГЫ»'] = parseFloat(d['«МЕКЕН ЫНТЫМАГЫ»'])
+                d['«МЕКЕНИМ КЫРГЫЗСТАН»'] = parseFloat(d['«МЕКЕНИМ КЫРГЫЗСТАН»'])
+                d['«МЕКЕНЧИЛ»'] = parseFloat(d['«МЕКЕНЧИЛ»'])
+                d['«ОРДО»'] = parseFloat(d['«ОРДО»'])
+                d['«РЕФОРМА» партиясы'] = parseFloat(d['«РЕФОРМА» партиясы'])
+                d['«ЧОҢ КАЗАТ»'] = parseFloat(d['«ЧОҢ КАЗАТ»'])
+                d['«ЫЙМАН НУРУ»'] = parseFloat(d['«ЫЙМАН НУРУ»'])
+                d['БААРЫНА КАРШЫ'] =  parseFloat(d['БААРЫНА КАРШЫ'])
+                d['РЕСПУБЛИКА'] = parseFloat(d['РЕСПУБЛИКА'])
+                d['СОЦИАЛ-ДЕМОКРАТТАР'] = parseFloat(d['СОЦИАЛ-ДЕМОКРАТТАР'])
+                });
+
+            return data                 
+            
+            }).then((resultsData) => {
+
+            if(typeof(resultsData) !== undefined){
+
+                let resultsSummary = {}
+
+                resultsData.forEach(result => {
+                    Object.keys(result).map((key) => {
+
+                        if (resultsSummary.hasOwnProperty(key)){
+                            resultsSummary[key] += result[key]
+                        }else{
+                            resultsSummary[key] = result[key]
+                        }            
+                    })  
+
+                }) 
+                
+                const parties = {...this.state.parties}
+
+                Object.keys(resultsSummary).map((key) => {
+
+                    if (parties.hasOwnProperty(matchParty([key]))){
+
+                        parties[matchParty([key])].voteResult = resultsSummary[key] / resultsSummary.total * 100   
+                        
+                    }  
+                })  
+
+                this.setState( {parties: parties} )
+
+
+                console.log('FIND BUG')
+                console.log(parties)
+
+                //Percents left
+                this.calculateResults()                
+            }                  
+        });                      
+    }
 
     voteNumberOnChange = (event) => {
 
@@ -89,7 +182,7 @@ class Parties extends React.Component {
         this.setState( {parties: parties} )
 
         //Percents left
-        this.calculateResults(party)
+        this.calculateResults()
     }
 
     sortProperties(obj, sortedBy, isNumericSort, reverse) {
@@ -118,7 +211,26 @@ class Parties extends React.Component {
         return sortable; // array in format [ [ key1, val1 ], [ key2, val2 ], ... ]
     }
 
-    calculateResults = (changedParty) => {
+    checkPartySwitch = (party) => {
+        if(party == 'Биримдик'){
+            return this.switchBirimdik
+        }
+
+        if(party == 'Мекеним Кыргызстан'){
+            return this.switchMekenim            
+        }
+
+        if(party == 'Кыргызстан'){
+            return this.switchKyrgyzstan          
+        }
+
+        return true
+    }
+
+    calculateResults = () => {
+
+        console.log('CALC')
+        console.log(this.cutoff)
 
         let percentSum = 0
         let totalPassedParlamentPercent = 0
@@ -129,7 +241,7 @@ class Parties extends React.Component {
             let voteResult = this.state.parties[party].voteResult
             percentSum = percentSum + voteResult
 
-            if (voteResult >= electionsConfig.cutoff && party != 'Против всех'){
+            if (voteResult >= this.cutoff && party != 'Против всех' && this.checkPartySwitch(party)){
                 totalPassedParlamentPercent = totalPassedParlamentPercent + voteResult     
             }
 
@@ -149,9 +261,9 @@ class Parties extends React.Component {
                 let parlamentResultPercents = 0  
                 let parlamentResultChairsFloat = 0
                 let parlamentResultChairs = 0 
-                let message = electionsConfig.cutoff_message + ' ' + electionsConfig.cutoff + '%'
+                let message = this.cutoff_message + ' ' + this.cutoff + '%'
 
-                if (voteResult >= electionsConfig.cutoff && party != 'Против всех'){
+                if (voteResult >= this.cutoff && party != 'Против всех' && this.checkPartySwitch(party)){
                     parlamentResultPercents = voteResult * 100 / totalPassedParlamentPercent  
                     parlamentResultChairsFloat = electionsConfig.totalChairs * parlamentResultPercents / 100 
                     parlamentResultChairs = Math.floor(electionsConfig.totalChairs * parlamentResultPercents / 100)
@@ -206,7 +318,7 @@ class Parties extends React.Component {
     
                     let voteResult = parties[party].voteResult    
     
-                    if (voteResult >= electionsConfig.cutoff && party != 'Против всех' ){
+                    if (voteResult >= this.cutoff && party != 'Против всех' && this.checkPartySwitch(party)){
                         if (party == monopolyParty){
                             parties[party].parlamentResultChairs = electionsConfig.maxChairsForParty
                         }else{  
@@ -251,7 +363,7 @@ class Parties extends React.Component {
                     
                     let voteResult = parties[party].voteResult  
 
-                    if (voteResult >= electionsConfig.cutoff){
+                    if (voteResult >= this.cutoff && this.checkPartySwitch(party)){
                         passCounter += 1 
                     }                    
                 })
@@ -327,6 +439,24 @@ class Parties extends React.Component {
         return chartData
     }
 
+    setCutoff = (event, value) => {
+        //console.log(event.target.ariaValueNow)
+        console.log('EVENT')
+        console.log(event)
+
+        if(this.cutoff != value){
+            this.cutoff = value
+            this.calculateResults()
+        }
+
+ 
+    }
+
+    handleChange = (event) => { 
+        this[event.target.name] = event.target.checked
+        this.calculateResults()
+      };
+
 
     render() {
 
@@ -338,13 +468,66 @@ class Parties extends React.Component {
 
         //console.log(this.prepareChartData())
         return (
-            <div> 
+            <div>                
+
                 <Grid container justify="center">
                     <Grid item className={classes.header}>
-                        <Typography variant="h6">{electionsConfig.distribute_all_votes_message}</Typography>
+                        <Typography variant="h5">Измените избирательный порог и Вы увидите как распределяются места в парламенте с учетом нового избирательного порога</Typography>
                     </Grid>
                 </Grid>
-                <Typography variant="body1">Осталось распределить: {this.state.percentsLeft}</Typography>                
+
+                <Grid container justify="center">
+                    <CutoffSlider cutoffOnChange={this.setCutoff}></CutoffSlider>
+                </Grid>
+
+                <FormControl component="fieldset">
+                    <FormLabel component="legend">Исключить нижеследующие партии из расчетов при распределении мест?</FormLabel>
+                        <FormGroup>
+                        <FormControlLabel
+                            control={
+                            <Switch
+                                checked={this.switchBirimdik}
+                                onChange={this.handleChange}
+                                name="switchBirimdik"
+                                color="Secondary"
+                            />
+                            }
+                            label="Биримдик"
+                        />
+                        <FormControlLabel
+                            control={
+                            <Switch
+                                checked={this.switchMekenim}
+                                onChange={this.handleChange}
+                                name="switchMekenim"
+                                color="Secondary"
+                            />
+                            }
+                            label="Мекеним Кыргызстан"
+                        />
+
+                        <FormControlLabel
+                            control={
+                            <Switch
+                                checked={this.switchKyrgyzstan}
+                                onChange={this.handleChange}
+                                name="switchKyrgyzstan"
+                                color="Secondary"
+                            />
+                            }
+                            label="Кыргызстан"
+                        />
+                        </FormGroup>
+                    </FormControl>
+
+                <div>
+                    {this.state.percentsLeft == 0
+                        ? <ParlamentChart>chartData={this.prepareChartData()}</ParlamentChart>
+                        : <b>Для отображения графика распределения мест необходимо полностью распределить проценты голосов</b>
+                    }
+                </div>
+
+                {/* <Typography variant="body1">Осталось распределить: {this.state.percentsLeft}</Typography>                 */}
 
                 <b>{isAgainstAllReached ? electionsConfig.against_all_reached_message : ''}</b>
 
@@ -374,12 +557,14 @@ class Parties extends React.Component {
                         <Grid style={{width: 90, paddingRight: 5}}>
                         <TextField  
                             id={value} 
+                            value={this.state.parties[value].voteResult.toFixed(2)}
+                            disabled={true}
                             type ='number'                            
                             onChange={this.voteNumberOnChange}
                             label="Процент голосов" 
                             variant="outlined"
                             fullWidth
-                            inputProps={{style: {fontSize: 14}}}
+                            inputProps={{style: {fontSize: 14, color: "black", fontWeight: 'bold'}}}
                             InputLabelProps={{style: {fontSize: 14}}}
                             />
                             
@@ -404,14 +589,7 @@ class Parties extends React.Component {
                     </Tooltip>
                     );
                 })}
-                </List>
-
-                <div>
-                    {this.state.percentsLeft == 0
-                        ? <ParlamentChart>chartData={this.prepareChartData()}</ParlamentChart>
-                        : <b>Для отображения графика распределения мест необходимо полностью распределить проценты голосов</b>
-                    }
-                </div>
+                </List>              
                               
             </div>
           );

@@ -1,6 +1,6 @@
 {
-  "homepage": "http://Xakim1c.github.io/parliament-calculator",
-  "name": "parliament-calculator",
+  "homepage": "http://Xakim1c.github.io/parliament-calculator-v3",
+  "name": "parliament-calculator-v3",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -8,6 +8,7 @@
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
+    "d3": "^6.2.0",
     "highcharts": "^8.2.0",
     "highcharts-react-official": "^3.0.0",
     "parliament-svg": "^2.1.4",
