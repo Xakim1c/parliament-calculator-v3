@@ -1,0 +1,30 @@
+{
+  "files": {
+    "main.css": "/parliament-calculator-v3/static/css/main.5f361e03.chunk.css",
+    "main.js": "/parliament-calculator-v3/static/js/main.d8f9718a.chunk.js",
+    "main.js.map": "/parliament-calculator-v3/static/js/main.d8f9718a.chunk.js.map",
+    "runtime-main.js": "/parliament-calculator-v3/static/js/runtime-main.36b8bce0.js",
+    "runtime-main.js.map": "/parliament-calculator-v3/static/js/runtime-main.36b8bce0.js.map",
+    "static/js/2.4aab5e0a.chunk.js": "/parliament-calculator-v3/static/js/2.4aab5e0a.chunk.js",
+    "static/js/2.4aab5e0a.chunk.js.map": "/parliament-calculator-v3/static/js/2.4aab5e0a.chunk.js.map",
+    "index.html": "/parliament-calculator-v3/index.html",
+    "precache-manifest.8307bae021998397e9a1da53ee697c23.js": "/parliament-calculator-v3/precache-manifest.8307bae021998397e9a1da53ee697c23.js",
+    "service-worker.js": "/parliament-calculator-v3/service-worker.js",
+    "static/css/main.5f361e03.chunk.css.map": "/parliament-calculator-v3/static/css/main.5f361e03.chunk.css.map",
+    "static/js/2.4aab5e0a.chunk.js.LICENSE.txt": "/parliament-calculator-v3/static/js/2.4aab5e0a.chunk.js.LICENSE.txt",
+    "static/media/PARTIES_RESULTS_REACT.csv": "/parliament-calculator-v3/static/media/PARTIES_RESULTS_REACT.a2cb1bc2.csv",
+    "static/media/logo.svg": "/parliament-calculator-v3/static/media/logo.5d5d9eef.svg",
+    "static/media/Бир Бол.png": "/parliament-calculator-v3/static/media/Бир Бол.d6ae1889.png",
+    "static/media/Кыргызстан.png": "/parliament-calculator-v3/static/media/Кыргызстан.5f98b378.png",
+    "static/media/Мекен Ынтымагы.png": "/parliament-calculator-v3/static/media/Мекен Ынтымагы.b9d0c5d3.png",
+    "static/media/Политическая партия ветеранов войны в Афганистане и участников других боевых конфликтов.png": "/parliament-calculator-v3/static/media/Политическая партия ветеранов войны в Афганистане и участников других боевых конфликтов.d975dd8f.png",
+    "static/media/Чон казат.png": "/parliament-calculator-v3/static/media/Чон казат.3f7000b1.png",
+    "static/media/Ыйман Нуру.png": "/parliament-calculator-v3/static/media/Ыйман Нуру.e1489fd6.png"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.36b8bce0.js",
+    "static/js/2.4aab5e0a.chunk.js",
+    "static/css/main.5f361e03.chunk.css",
+    "static/js/main.d8f9718a.chunk.js"
+  ]
+}
